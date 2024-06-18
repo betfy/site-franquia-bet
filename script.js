@@ -1,65 +1,59 @@
 document.addEventListener("DOMContentLoaded", function () {
-  let isMobile = window.innerWidth <= 768;
-  if (isMobile) {
+  const couponCode = "GANHA25";
+  if (window.innerWidth <= 768) {
     function createButton() {
       let button = document.createElement("button");
-      button.innerText = "Resgatar Bônus";
+      button.innerHTML = "<b>Resgatar Bônus</b>";
       button.classList.add("col-6", "btn", "btn-primary");
-
-      // Estiliza o botão para ficar sobre a imagem
       button.style.position = "absolute";
       button.style.bottom = "20px";
       button.style.left = "50%";
-      button.style.transform = "translateX(-50%)"
-
-      // Adiciona o botão ao banner pop-up
+      button.style.transform = "translateX(-50%)";
       document.querySelector(".modal-content").appendChild(button);
 
       button.addEventListener("click", function () {
-        let depositButton = document.querySelector(".NavBar_DepositButton__229mf");
         let closeButton = document.querySelector(".modal-content a");
-
-        // Fecha o modal
-        if (closeButton) {
-          closeButton.click();
-        }
-
-        // Aguarda um pequeno intervalo para garantir que o modal seja fechado antes de clicar no botão de depósito
+        if (closeButton) closeButton.click();
+        observerPopUp.disconnect();
         setTimeout(function () {
+          let depositButton = document.querySelector(".NavBar_DepositButton__229mf");
           if (depositButton) {
+            observeCoupon();
             depositButton.click();
-
-            // Observa mudanças no DOM para encontrar o checkbox e preencher o cupom
-            const observer = new MutationObserver(function (mutations) {
-              mutations.forEach(function (mutation) {
-                const couponCheckbox = document.querySelector("#cupom");
-                if (couponCheckbox && !couponCheckbox.checked) {
-                  couponCheckbox.click();
-                  observer.disconnect(); // Encerra o observer assim que o checkbox for clicado
-
-                  setTimeout(function () {
-                    const couponInput = document.querySelector(".d-block.mt-2 .form-control");
-                    if (couponInput) {
-                      // Aguarda a digitação do cupom antes de focar no input do depósito
-                      simulateTyping(couponInput, "GANHA25", function() {
-                        const depositInput = document.querySelector(".input-group input[placeholder='Informe o valor']");
-                        if (depositInput) {
-                          depositInput.focus();
-                        }
-                      });
-                    }
-                  }, 300); // Ajuste o tempo conforme necessário
-                }
-              });
-            });
-
-            observer.observe(document.body, { childList: true, subtree: true });
           }
-        }, 300);  // Intervalo de 300ms, ajuste conforme necessário
+        }, 300);
       });
     }
 
-    // Função para simular a digitação no input usando eventos de teclado
+    function observeCoupon() {
+      const observerCoupon = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          const couponCheckbox = document.querySelector("#cupom");
+          if (couponCheckbox && !couponCheckbox.checked) {
+            couponCheckbox.click();
+            setTimeout(function () {
+              const couponInput = document.querySelector(".d-block.mt-2 .form-control");
+              if (couponInput) {
+                couponInput.focus();
+                couponInput.click();
+                observerCoupon.disconnect();
+                setTimeout(function () {
+                  simulateTyping(couponInput, couponCode, function() {
+                    const depositInput = document.querySelector(".input-group input[placeholder='Informe o valor']");
+                    if (depositInput) {
+                      depositInput.focus();
+                      depositInput.click();
+                    }
+                  });
+                }, 300);
+              }
+            }, 300);
+          }
+        });
+      });
+      observerCoupon.observe(document.body, { childList: true, subtree: true });
+    }
+
     function simulateTyping(input, text, callback) {
       input.focus();
       let index = 0;
@@ -76,24 +70,20 @@ document.addEventListener("DOMContentLoaded", function () {
         index++;
         if (index === text.length) {
           clearInterval(interval);
-          // Garante que o botão de depósito seja habilitado
           input.dispatchEvent(new Event('change', { bubbles: true }));
           if (callback) callback();
         }
-      }, 100); // Intervalo de 100ms entre cada caractere, ajuste conforme necessário
+      }, 100);
     }
 
-    // Espera o banner pop-up aparecer
-    const observer = new MutationObserver(function (mutations) {
+    const observerPopUp = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
-        const popUp = document.querySelector(".modal-content"); // Seleciona o banner pop-up
+        const popUp = document.querySelector(".modal-content");
         if (popUp && !document.querySelector(".modal-content button.btn-primary")) {
           createButton();
-          observer.disconnect(); // Encerra o observer assim que o botão for adicionado
         }
       });
     });
-
-    observer.observe(document.body, { childList: true, subtree: true });
+    observerPopUp.observe(document.body, { childList: true, subtree: true });
   }
 });
