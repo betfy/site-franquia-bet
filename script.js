@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
               couponInput = document.querySelector(".d-block.mt-2 .form-control");
               couponInput.focus();
               couponInput.click();
-              couponInput.value = couponCode;
+              // couponInput.value = couponCode;
             }, 300);
           }, () => {
             console.log("Modal de alerta fechado com cancelamento.");
