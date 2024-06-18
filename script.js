@@ -36,15 +36,16 @@ document.addEventListener("DOMContentLoaded", function () {
               if (couponInput) {
                 couponInput.focus();
                 couponInput.click();
-                observerCoupon.disconnect();
                 setTimeout(function () {
-                  simulateTyping(couponInput, couponCode, function() {
+                  couponInput.value = couponCode;
+                  observerCoupon.disconnect();
+                  setTimeout(function () {
                     const depositInput = document.querySelector(".input-group input[placeholder='Informe o valor']");
                     if (depositInput) {
                       depositInput.focus();
                       depositInput.click();
                     }
-                  });
+                  }, 300);
                 }, 300);
               }
             }, 300);
@@ -52,28 +53,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       });
       observerCoupon.observe(document.body, { childList: true, subtree: true });
-    }
-
-    function simulateTyping(input, text, callback) {
-      input.focus();
-      let index = 0;
-      const interval = setInterval(() => {
-        const event = new KeyboardEvent('keydown', {
-          key: text[index],
-          keyCode: text.charCodeAt(index),
-          which: text.charCodeAt(index),
-          bubbles: true
-        });
-        input.dispatchEvent(event);
-        input.value += text[index];
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        index++;
-        if (index === text.length) {
-          clearInterval(interval);
-          input.dispatchEvent(new Event('change', { bubbles: true }));
-          if (callback) callback();
-        }
-      }, 100);
     }
 
     const observerPopUp = new MutationObserver(function (mutations) {
