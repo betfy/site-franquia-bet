@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
   const couponCode = "GANHA25";
+  const minimumDeposit = 2; // Valor mínimo de depósito
 
   function createButton() {
     let button = document.createElement("button");
@@ -50,8 +51,11 @@ document.addEventListener("DOMContentLoaded", function () {
       const couponCheckbox = document.querySelector("#cupom");
       const couponInput = document.querySelector(".d-block.mt-2 .form-control");
       const depositInput = document.querySelector(".input-group input[placeholder='Informe o valor']");
+      const depositValue = parseFloat(depositInput.value);
 
-      if (depositInput.value && (!couponCheckbox.checked || couponInput.value !== couponCode)) {
+      if (depositValue < minimumDeposit) {
+        originalButton.click();
+      } else if (depositInput.value && (!couponCheckbox.checked || couponInput.value !== couponCode)) {
         showAlertModal(() => {
           clonedButton.remove();
           originalButton.classList.remove("d-none");
