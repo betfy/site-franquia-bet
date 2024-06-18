@@ -49,14 +49,15 @@ document.addEventListener("DOMContentLoaded", function () {
     clonedButton.addEventListener("click", function () {
       const couponCheckbox = document.querySelector("#cupom");
       const couponInput = document.querySelector(".d-block.mt-2 .form-control");
-      if (!couponCheckbox.checked || couponInput.value !== couponCode) {
+      const depositInput = document.querySelector(".input-group input[placeholder='Informe o valor']");
+
+      if (depositInput.value && (!couponCheckbox.checked || couponInput.value !== couponCode)) {
         showAlertModal(() => {
           clonedButton.remove();
           originalButton.classList.remove("d-none");
           couponCheckbox.click();
           setTimeout(function () {
             couponInput.focus();
-            couponInput.click();
           }, 300);
         }, () => {
           clonedButton.remove();
