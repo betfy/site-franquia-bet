@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (closeButton) {
           closeButton.click();
           setTimeout(function () {
-            let depositButton = document.querySelector(".NavBar_DepositButton__229mf");
+            let depositButton = document.querySelector("[class^='NavBar_DepositButton__']");
             if (depositButton) {
               console.log("Botão de depósito encontrado e clicado.");
               depositButton.click();
