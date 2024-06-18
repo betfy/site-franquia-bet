@@ -1,9 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
   const couponCode = "GANHA25";
   const minimumDeposit = 2;
+  const isMobile = window.innerWidth <= 768;
+  const mainContainer = document.querySelector("main.container");
+  const pageWrapper = document.querySelector("#page-wrapper");
 
   // Verifica se está no mobile e na página inicial
-  if (window.innerWidth <= 768 && document.querySelector("main.container") && !document.querySelector("#page-wrapper")) {
+  if (isMobile && mainContainer && !pageWrapper) {
     console.log("Script iniciado na página inicial e no mobile.");
 
     function createButton() {
@@ -42,8 +45,6 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Botão de depósito encontrado no formulário.");
             observerDepositForm.disconnect();
             replaceDepositButton(depositButton);
-            const depositInput = document.querySelector(".input-group input[placeholder='Informe o valor']");
-            depositInput.focus();
           }
         });
       });
@@ -77,7 +78,6 @@ document.addEventListener("DOMContentLoaded", function () {
               couponInput = document.querySelector(".d-block.mt-2 .form-control");
               couponInput.focus();
               couponInput.click();
-              // couponInput.value = couponCode;
             }, 300);
           }, () => {
             console.log("Modal de alerta fechado com cancelamento.");
@@ -141,6 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
       alertModal.querySelector(".ajs-close").addEventListener("click", closeModal);
     }
 
+    let observerPopUpConnected = true;
     const observerPopUp = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
         const popUp = document.querySelector(".modal-content");
@@ -148,10 +149,24 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log("Banner pop-up detectado.");
           createButton();
           observerPopUp.disconnect();
+          observerPopUpConnected = false;
         }
       });
     });
     observerPopUp.observe(document.body, { childList: true, subtree: true });
+
+    const observerPageChange = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (!mainContainer && pageWrapper) {
+          console.log("Página inicial desapareceu, desconectando observerPopUp.");
+          if (observerPopUpConnected) {
+            observerPopUp.disconnect();
+          }
+          observerPageChange.disconnect();
+        }
+      });
+    });
+    observerPageChange.observe(document.body, { childList: true, subtree: true });
   } else {
     console.log("Não é a página inicial ou não está no mobile.");
   }
