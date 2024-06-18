@@ -49,19 +49,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     clonedButton.addEventListener("click", function () {
       const couponCheckbox = document.querySelector("#cupom");
-      const couponInput = document.querySelector(".d-block.mt-2 .form-control");
       const depositInput = document.querySelector(".input-group input[placeholder='Informe o valor']");
       const depositValue = parseFloat(depositInput.value);
+      let couponInput = document.querySelector(".d-block.mt-2 .form-control");
 
       if (depositValue < minimumDeposit) {
         originalButton.click();
-      } else if (depositInput.value && (!couponCheckbox.checked || couponInput.value !== couponCode)) {
+      } else if (depositInput.value && (!couponCheckbox.checked || couponInput?.value !== couponCode)) {
         showAlertModal(() => {
           clonedButton.remove();
           originalButton.classList.remove("d-none");
           couponCheckbox.click();
           setTimeout(function () {
+            couponInput = document.querySelector(".d-block.mt-2 .form-control");
             couponInput.focus();
+            couponInput.click();
           }, 300);
         }, () => {
           clonedButton.remove();
