@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const couponCode = "GANHA25";
   const minimumDeposit = 2;
 
-  // Verifica se está na página inicial
-  if (document.querySelector("main.container") && !document.querySelector("#page-wrapper")) {
+  // Verifica se está no mobile e na página inicial
+  if (window.innerWidth <= 768 && document.querySelector("main.container") && !document.querySelector("#page-wrapper")) {
     function createButton() {
       let button = document.createElement("button");
       button.innerHTML = "<b>Resgatar Bônus</b>";
