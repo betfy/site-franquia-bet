@@ -38,6 +38,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 couponInput.click();
                 setTimeout(function () {
                   couponInput.value = couponCode;
+                  couponInput.dispatchEvent(new Event('input', { bubbles: true }));
+                  couponInput.dispatchEvent(new Event('change', { bubbles: true }));
                   observerCoupon.disconnect();
                   setTimeout(function () {
                     const depositInput = document.querySelector(".input-group input[placeholder='Informe o valor']");
