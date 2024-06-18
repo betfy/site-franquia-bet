@@ -125,14 +125,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
       function closeModal() {
         alertModal.remove();
-        if (onCancel) onCancel();
       }
 
       alertModal.querySelector(".ajs-ok").addEventListener("click", function () {
-        closeModal();
+        alertModal.remove();
         if (onAccept) onAccept();
       });
-      alertModal.querySelector(".ajs-cancel").addEventListener("click", closeModal);
+      alertModal.querySelector(".ajs-cancel").addEventListener("click", function () {
+        closeModal();
+        if (onCancel) onCancel();
+      });
       alertModal.querySelector(".ajs-close").addEventListener("click", closeModal);
     }
 
