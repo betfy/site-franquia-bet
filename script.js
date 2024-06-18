@@ -4,7 +4,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Verifica se está no mobile e na página inicial
   if (window.innerWidth <= 768 && document.querySelector("main.container") && !document.querySelector("#page-wrapper")) {
+    console.log("Script iniciado na página inicial e no mobile.");
+
     function createButton() {
+      console.log("Criando botão 'Resgatar Bônus'.");
       let button = document.createElement("button");
       button.innerHTML = "<b>Resgatar Bônus</b>";
       button.classList.add("col-6", "btn", "btn-primary");
@@ -15,12 +18,14 @@ document.addEventListener("DOMContentLoaded", function () {
       document.querySelector(".modal-content").appendChild(button);
 
       button.addEventListener("click", function () {
+        console.log("Botão 'Resgatar Bônus' clicado.");
         let closeButton = document.querySelector(".modal-content a");
         if (closeButton) {
           closeButton.click();
           setTimeout(function () {
             let depositButton = document.querySelector(".NavBar_DepositButton__229mf");
             if (depositButton) {
+              console.log("Botão de depósito encontrado e clicado.");
               depositButton.click();
               observeDepositForm();
             }
@@ -34,6 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mutations.forEach(function (mutation) {
           const depositButton = document.querySelector(".d-block.mt-2 .btn-primary.btn-block");
           if (depositButton && !document.querySelector(".d-block.mt-2 .btn-primary.btn-block.clone")) {
+            console.log("Botão de depósito encontrado no formulário.");
             observerDepositForm.disconnect();
             replaceDepositButton(depositButton);
           }
@@ -56,9 +62,12 @@ document.addEventListener("DOMContentLoaded", function () {
         let couponInput = document.querySelector(".d-block.mt-2 .form-control");
 
         if (depositValue < minimumDeposit) {
+          console.log("Valor de depósito menor que o mínimo, clicando no botão original.");
           originalButton.click();
         } else if (depositInput.value && (!couponCheckbox.checked || couponInput?.value !== couponCode)) {
+          console.log("Abrindo modal de alerta.");
           showAlertModal(() => {
+            console.log("Modal de alerta fechado com aceitação.");
             clonedButton.remove();
             originalButton.classList.remove("d-none");
             couponCheckbox.click();
@@ -68,11 +77,13 @@ document.addEventListener("DOMContentLoaded", function () {
               couponInput.click();
             }, 300);
           }, () => {
+            console.log("Modal de alerta fechado com cancelamento.");
             clonedButton.remove();
             originalButton.classList.remove("d-none");
             originalButton.click();
           });
         } else {
+          console.log("Clicando no botão original.");
           originalButton.click();
         }
       });
@@ -118,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       alertModal.querySelector(".ajs-ok").addEventListener("click", function () {
-        alertModal.remove();
+        closeModal();
         if (onAccept) onAccept();
       });
       alertModal.querySelector(".ajs-cancel").addEventListener("click", closeModal);
@@ -129,10 +140,14 @@ document.addEventListener("DOMContentLoaded", function () {
       mutations.forEach(function (mutation) {
         const popUp = document.querySelector(".modal-content");
         if (popUp && !document.querySelector(".modal-content button.btn-primary")) {
+          console.log("Banner pop-up detectado.");
           createButton();
+          observerPopUp.disconnect();
         }
       });
     });
     observerPopUp.observe(document.body, { childList: true, subtree: true });
+  } else {
+    console.log("Não é a página inicial ou não está no mobile.");
   }
 });
