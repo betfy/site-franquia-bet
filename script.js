@@ -42,6 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Botão de depósito encontrado no formulário.");
             observerDepositForm.disconnect();
             replaceDepositButton(depositButton);
+            const depositInput = document.querySelector(".input-group input[placeholder='Informe o valor']");
+            depositInput.focus();
           }
         });
       });
