@@ -17,36 +17,45 @@ document.addEventListener("DOMContentLoaded", function () {
         if (closeButton) closeButton.click();
         observerPopUp.disconnect();
         setTimeout(function () {
-          let depositButton = document.querySelector(".NavBar_DepositButton__229mf");
+          let depositButton = document.querySelector(".d-block.mt-2 .btn-primary.btn-block");
           if (depositButton) {
-            observeDepositButton();
+            observeDepositButton(depositButton);
             depositButton.click();
           }
         }, 300);
       });
     }
 
-    function observeDepositButton() {
+    function observeDepositButton(originalButton) {
       const observerDepositButton = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
           const depositButton = document.querySelector(".d-block.mt-2 .btn-primary.btn-block");
           const couponCheckbox = document.querySelector("#cupom");
           const couponInput = document.querySelector(".d-block.mt-2 .form-control");
-          if (depositButton) {
+          if (depositButton && depositButton === originalButton) {
             observerDepositButton.disconnect();
-            depositButton.addEventListener("click", function (e) {
-              if (!couponCheckbox.checked && !couponInput.value) {
-                e.preventDefault();
-                showAlertModal();
+
+            const clonedButton = document.createElement("span");
+            clonedButton.innerHTML = depositButton.innerHTML;
+            clonedButton.className = depositButton.className;
+            depositButton.replaceWith(clonedButton);
+
+            clonedButton.addEventListener("click", function () {
+              if (!couponCheckbox.checked || couponInput.value !== couponCode) {
+                showAlertModal(() => {
+                  clonedButton.replaceWith(originalButton);
+                });
+              } else {
+                originalButton.click();
               }
-            }, { once: true });
+            });
           }
         });
       });
       observerDepositButton.observe(document.body, { childList: true, subtree: true });
     }
 
-    function showAlertModal() {
+    function showAlertModal(onClose) {
       const alertModal = document.createElement("div");
       alertModal.className = "alertify ajs-movable ajs-closable ajs-pinnable ajs-pulse";
       alertModal.style.display = "block";
@@ -77,9 +86,13 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
       document.body.appendChild(alertModal);
 
-      alertModal.querySelector(".ajs-ok").addEventListener("click", function () {
+      function closeModal() {
         alertModal.remove();
-      });
+        if (onClose) onClose();
+      }
+
+      alertModal.querySelector(".ajs-ok").addEventListener("click", closeModal);
+      alertModal.querySelector(".ajs-close").addEventListener("click", closeModal);
     }
 
     const observerPopUp = new MutationObserver(function (mutations) {
