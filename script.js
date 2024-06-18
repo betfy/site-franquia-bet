@@ -53,6 +53,11 @@ document.addEventListener("DOMContentLoaded", function () {
         showAlertModal(() => {
           clonedButton.remove();
           originalButton.classList.remove("d-none");
+          couponCheckbox.click();
+          setTimeout(function () {
+            couponInput.focus();
+            couponInput.click();
+          }, 300);
         }, () => {
           clonedButton.remove();
           originalButton.classList.remove("d-none");
@@ -85,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <div class="ajs-footer">
             <div class="ajs-auxiliary ajs-buttons"></div>
             <div class="ajs-primary ajs-buttons">
-              <button class="ajs-button ajs-cancel">Dispensar Bônus</button>
+              <button class="ajs-button ajs-cancel">Dispensar</button>
             </div>
             <div class="ajs-primary ajs-buttons">
               <button class="ajs-button ajs-ok">Utilizar Cupom</button>
