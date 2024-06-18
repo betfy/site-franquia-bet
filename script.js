@@ -30,20 +30,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const observerDepositForm = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
         const depositButton = document.querySelector(".d-block.mt-2 .btn-primary.btn-block");
-        if (depositButton) {
+        if (depositButton && !document.querySelector(".d-block.mt-2 .btn-primary.btn-block.clone")) {
           observerDepositForm.disconnect();
-          replaceDepositButton();
+          replaceDepositButton(depositButton);
         }
       });
     });
     observerDepositForm.observe(document.body, { childList: true, subtree: true });
   }
 
-  function replaceDepositButton() {
-    const originalButton = document.querySelector(".d-block.mt-2 .btn-primary.btn-block");
+  function replaceDepositButton(originalButton) {
     const clonedButton = document.createElement("span");
     clonedButton.innerHTML = originalButton.innerHTML;
-    clonedButton.className = originalButton.className;
+    clonedButton.className = originalButton.className + " clone";
     originalButton.classList.add("d-none");
     originalButton.parentNode.insertBefore(clonedButton, originalButton.nextSibling);
 
@@ -54,6 +53,10 @@ document.addEventListener("DOMContentLoaded", function () {
         showAlertModal(() => {
           clonedButton.remove();
           originalButton.classList.remove("d-none");
+        }, () => {
+          clonedButton.remove();
+          originalButton.classList.remove("d-none");
+          originalButton.click();
         });
       } else {
         originalButton.click();
@@ -61,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function showAlertModal(onClose) {
+  function showAlertModal(onAccept, onCancel) {
     const alertModal = document.createElement("div");
     alertModal.className = "alertify ajs-movable ajs-closable ajs-pinnable ajs-pulse";
     alertModal.style.display = "block";
@@ -77,12 +80,15 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>
           <div class="ajs-header">Atenção</div>
           <div class="ajs-body">
-            <div class="ajs-content">Utilize o cupom ${couponCode} para ganhar o bônus!</div>
+            <div class="ajs-content">Utilize o cupom ${couponCode} para receber o seu bônus!</div>
           </div>
           <div class="ajs-footer">
             <div class="ajs-auxiliary ajs-buttons"></div>
             <div class="ajs-primary ajs-buttons">
-              <button class="ajs-button ajs-ok">OK</button>
+              <button class="ajs-button ajs-cancel">Dispensar Bônus</button>
+            </div>
+            <div class="ajs-primary ajs-buttons">
+              <button class="ajs-button ajs-ok">Utilizar Cupom</button>
             </div>
           </div>
           <div class="ajs-handle"></div>
@@ -94,10 +100,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function closeModal() {
       alertModal.remove();
-      if (onClose) onClose();
+      if (onCancel) onCancel();
     }
 
-    alertModal.querySelector(".ajs-ok").addEventListener("click", closeModal);
+    alertModal.querySelector(".ajs-ok").addEventListener("click", function () {
+      alertModal.remove();
+      if (onAccept) onAccept();
+    });
+    alertModal.querySelector(".ajs-cancel").addEventListener("click", closeModal);
     alertModal.querySelector(".ajs-close").addEventListener("click", closeModal);
   }
 
