@@ -399,27 +399,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // });
   }
 
-  // Interceptação de fetch
+  // Interceptação de Requisições Fetch e XMLHttpRequests
   (function () {
     const originalFetch = window.fetch;
 
     window.fetch = async function (...args) {
-      const response = await originalFetch(...args);
-      const clonedResponse = response.clone();
+      try {
+        const response = await originalFetch.apply(this, args);
+        const clonedResponse = response.clone();
 
-      clonedResponse
-        .json()
-        .then((data) => {
-          console.log('Intercepted fetch request URL:', args[0]);
-          if (data) {
-            console.log('Response data:', data);
-          }
-        })
-        .catch((error) => {
-          console.error('Error parsing response as JSON:', error);
-        });
+        clonedResponse
+          .json()
+          .then((data) => {
+            console.log('Intercepted fetch request URL:', args[0]);
+            if (data) {
+              console.log('Response data:', data);
+            }
+          })
+          .catch((error) => {
+            console.log('Non-JSON response or error parsing JSON:', error);
+          });
 
-      return response;
+        return response;
+      } catch (error) {
+        console.error('Fetch request failed:', error);
+        throw error;
+      }
+    };
+
+    // Intercept XMLHttpRequests
+    const originalOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function (method, url) {
+      this.addEventListener('load', function () {
+        try {
+          const response = this.responseText;
+          const data = JSON.parse(response);
+          console.log('Intercepted XHR request URL:', url);
+          console.log('Response data:', data);
+        } catch (error) {
+          console.log('Non-JSON response or error parsing JSON:', error);
+        }
+      });
+      originalOpen.apply(this, arguments);
     };
   })();
 });
