@@ -152,13 +152,19 @@ document.addEventListener('DOMContentLoaded', () => {
             )
           : document.querySelector(
               ".home-wrapper .input-group input[placeholder='Informe o código do cupom']",
-            );
-        if (depositValue < siteMinimumDeposit) {
+          );
+        if (!depositValue) {
+          console.log('Valor de depósito não informado. Clicando no input...');
+          depositInput.focus();
+          depositInput.click();
+        }
+        else if (depositValue < siteMinimumDeposit) {
           console.log(
             'Valor de depósito menor que o mínimo. Clicando no botão original...',
           );
           originalButton.click();
-        } else if (
+        }
+        else if (
           depositInput.value &&
           (!couponCheckBox.checked || couponInput?.value !== depositCouponCode)
         ) {
