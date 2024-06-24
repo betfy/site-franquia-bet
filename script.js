@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Script de cupom de depósito iniciado.');
     initModalBannerPopUpObserver();
   }
-  // ? EVENTOS PERSOLNALIZADOS DO GTM (Google Tag Manager)
+  // ? EVENTOS PERSONALIZADOS DO GTM (Google Tag Manager)
   console.log('Script de Eventos GTM iniciado.');
   initRegistrationStartedObserver();
   initDepositStartedObserver();
@@ -32,7 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initModalBannerPopUpObserver() {
     const modalBannerPopUpObserver = new MutationObserver((mutations) => {
+      let executed = false;
       mutations.forEach((mutation) => {
+        if (executed) return;
         const modal = document.querySelector('.modal-content');
         if (modal) {
           console.log('Modal detectado. Analisando conteúdo...');
@@ -43,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Desconectando bannerPopUpObserver...');
             modalBannerPopUpObserver.disconnect();
             addButtonBannerPopUp();
+            executed = true;
           }
         }
       });
@@ -52,11 +55,14 @@ document.addEventListener('DOMContentLoaded', () => {
       subtree: true,
     });
     const pageChangeObserver = new MutationObserver((mutations) => {
+      let executed = false;
       mutations.forEach((mutation) => {
+        if (executed) return;
         if (!isInitialPage()) {
           console.log('Desconectando bannerPopUpObserver...');
           modalBannerPopUpObserver.disconnect();
           pageChangeObserver.disconnect();
+          executed = true;
         }
       });
     });
@@ -100,7 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initDepositFormObserver() {
     const depositFormObserver = new MutationObserver((mutations) => {
+      let executed = false;
       mutations.forEach((mutation) => {
+        if (executed) return;
         const depositButton = isMobile()
           ? document.querySelector('.home-m-wrapper .btn-primary.btn-block')
           : document.querySelector('.home-wrapper .btn-primary.btn-block');
@@ -113,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
           );
           replaceDepositFormButton(depositButton);
           depositFormObserver.disconnect();
+          executed = true;
         }
       });
     });
@@ -260,18 +269,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // =============================================================
 
-  // ? EVENTOS PERSOLNALIZADOS DO GTM (Google Tag Manager)
+  // ? EVENTOS PERSONALIZADOS DO GTM (Google Tag Manager)
 
   function sendEventToDataLayer(eventName) {
-    window.dataLayer.push({
-      event: eventName,
-    });
+    if (!window.dataLayer) {
+      window.dataLayer = [];
+    }
+    const existingEvent = window.dataLayer.find(
+      (event) => event.event === eventName,
+    );
+    if (!existingEvent) {
+      window.dataLayer.push({
+        event: eventName,
+      });
+      console.log(`Evento '${eventName}' adicionado ao DataLayer.`);
+    } else {
+      console.log(`Evento '${eventName}' já existe no DataLayer.`);
+    }
   }
 
   function initRegistrationStartedObserver() {
     const modalRegistrationStartedObserver = new MutationObserver(
       (mutations) => {
+        let executed = false;
         mutations.forEach((mutation) => {
+          if (executed) return;
           const modal = document.querySelector('.modal-content');
           if (modal) {
             console.log('Modal detectado. Analisando conteúdo...');
@@ -289,9 +311,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 "Cadastro iniciado. Evento 'registration_started' disparado.",
               );
               sendEventToDataLayer('registration_started');
-              initRegistrationCompletedObserver(
-                modalRegistrationStartedObserver,
-              );
+              modalRegistrationStartedObserver.disconnect();
+              executed = true;
+              initRegistrationCompletedObserver();
             }
           }
         });
@@ -303,10 +325,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function initRegistrationCompletedObserver(modalRegistrationStartedObserver) {
+  function initRegistrationCompletedObserver() {
     const alertRegistrationCompletedObserver = new MutationObserver(
       (mutations) => {
+        let executed = false;
         mutations.forEach((mutation) => {
+          if (executed) return;
           const alert = document.querySelector('.alertify .ajs-dialog');
           if (alert) {
             console.log('Alerta detectado. Analisando conteúdo...');
@@ -317,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
               );
               sendEventToDataLayer('registration_completed');
               alertRegistrationCompletedObserver.disconnect();
-              modalRegistrationStartedObserver.disconnect();
+              executed = true;
             }
           }
         });
@@ -331,7 +355,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initDepositStartedObserver() {
     const modalDepositStartedObserver = new MutationObserver((mutations) => {
+      let executed = false;
       mutations.forEach((mutation) => {
+        if (executed) return;
         const modal = document.querySelector('.modal-content');
         if (modal) {
           console.log('Modal detectado. Analisando conteúdo...');
@@ -345,7 +371,9 @@ document.addEventListener('DOMContentLoaded', () => {
               "Depósito iniciado. Evento 'deposit_started' disparado.",
             );
             sendEventToDataLayer('deposit_started');
-            initDepositCompletedObserver(modalDepositStartedObserver);
+            modalDepositStartedObserver.disconnect();
+            executed = true;
+            initDepositCompletedObserver();
           }
         }
       });
@@ -356,5 +384,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function initDepositCompletedObserver(modalDepositStartedObserver) {}
+  function initDepositCompletedObserver() {
+    // Implementar a lógica para detectar o término do depósito
+    // const depositCompletedObserver = new MutationObserver((mutations) => {
+    //   let executed = false;
+    //   mutations.forEach((mutation) => {
+    //     if (executed) return;
+    //     // Lógica para detectar o evento de depósito concluído
+    //   });
+    // });
+    // depositCompletedObserver.observe(document.body, {
+    //   childList: true,
+    //   subtree: true,
+    // });
+  }
 });
