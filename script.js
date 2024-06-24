@@ -40,11 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
           const modalBody = modal.querySelector('.modal-body');
           // Se não houver header e body modal é o Banner PopUp
           if (!modalHeader && !modalBody) {
-            addButtonBannerPopUp();
+            console.log('Desconectando bannerPopUpObserver...');
             modalBannerPopUpObserver.disconnect();
+            addButtonBannerPopUp();
           }
         }
       });
+    }).observe(document.body, {
+      childList: true,
+      subtree: true,
     });
     const pageChangeObserver = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -54,12 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
           pageChangeObserver.disconnect();
         }
       });
-    });
-    modalBannerPopUpObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-    pageChangeObserver.observe(document.body, {
+    }).observe(document.body, {
       childList: true,
       subtree: true,
     });
@@ -68,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function addButtonBannerPopUp() {
     let button = document.createElement('button');
     button.innerHTML = '<b>Resgatar Bônus</b>';
-    button.classList.add('col-6', 'btn', 'btn-primary');
+    button.classList.add('col-6', 'btn', 'btn-success');
     button.style.position = 'absolute';
     button.style.bottom = '20px';
     button.style.left = '50%';
@@ -114,8 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
           depositFormObserver.disconnect();
         }
       });
-    });
-    depositFormObserver.observe(document.body, {
+    }).observe(document.body, {
       childList: true,
       subtree: true,
     });
@@ -291,8 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       },
-    );
-    modalRegistrationStartedObserver.observe(document.body, {
+    ).observe(document.body, {
       childList: true,
       subtree: true,
     });
@@ -317,48 +314,37 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       },
-    );
-    alertRegistrationCompletedObserver.observe(document.body, {
+    ).observe(document.body, {
       childList: true,
       subtree: true,
     });
   }
 
   function initDepositStartedObserver() {
-    const modalDepositStartedObserver = new MutationObserver(
-      (mutations) => {
-        mutations.forEach((mutation) => {
-          const modal = document.querySelector('.modal-content');
-          if (modal) {
-            console.log('Modal detectado. Analisando conteúdo...');
-            const modalTitle = modal.querySelector(
-              '.modal-header .modal-title',
+    const modalDepositStartedObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        const modal = document.querySelector('.modal-content');
+        if (modal) {
+          console.log('Modal detectado. Analisando conteúdo...');
+          const modalTitle = modal.querySelector('.modal-header .modal-title');
+          const modalText = modal.querySelector('.modal-body .text-center');
+          if (
+            modalTitle?.textContent.includes('Pagar') &&
+            modalText?.textContent.includes('Leia o QR Code')
+          ) {
+            console.log(
+              "Depósito iniciado. Evento 'deposit_started' disparado.",
             );
-            const modalText = modal.querySelector(
-              '.modal-body .text-center',
-            );
-            if (
-              modalTitle?.textContent.includes('Pagar') &&
-              modalText?.textContent.includes('Leia o QR Code')
-            ) {
-              console.log(
-                "Depósito iniciado. Evento 'deposit_started' disparado.",
-              );
-              sendEventToDataLayer('deposit_started');
-              initDepositCompletedObserver(modalDepositStartedObserver);
-            }
+            sendEventToDataLayer('deposit_started');
+            initDepositCompletedObserver(modalDepositStartedObserver);
           }
-        });
-      },
-    );
-    modalDepositStartedObserver.observe(document.body, {
+        }
+      });
+    }).observe(document.body, {
       childList: true,
       subtree: true,
     });
   }
 
-  function initDepositCompletedObserver(modalDepositStartedObserver) {
-    
-  }
-
+  function initDepositCompletedObserver(modalDepositStartedObserver) {}
 });
