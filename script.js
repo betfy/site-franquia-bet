@@ -41,12 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
           // Se não houver header e body modal é o Banner PopUp
           if (!modalHeader && !modalBody) {
             console.log('Desconectando bannerPopUpObserver...');
-            modalBannerPopUpObserver?.disconnect();
+            modalBannerPopUpObserver.disconnect();
             addButtonBannerPopUp();
           }
         }
       });
-    }).observe(document.body, {
+    });
+    modalBannerPopUpObserver.observe(document.body, {
       childList: true,
       subtree: true,
     });
@@ -54,11 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
       mutations.forEach((mutation) => {
         if (!isInitialPage()) {
           console.log('Desconectando bannerPopUpObserver...');
-          modalBannerPopUpObserver?.disconnect();
-          pageChangeObserver?.disconnect();
+          modalBannerPopUpObserver.disconnect();
+          pageChangeObserver.disconnect();
         }
       });
-    }).observe(document.body, {
+    });
+    pageChangeObserver.observe(document.body, {
       childList: true,
       subtree: true,
     });
@@ -110,10 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
             'Formulário de depósito detectado. Clonando botão de depósito...',
           );
           replaceDepositFormButton(depositButton);
-          depositFormObserver?.disconnect();
+          depositFormObserver.disconnect();
         }
       });
-    }).observe(document.body, {
+    });
+    depositFormObserver.observe(document.body, {
       childList: true,
       subtree: true,
     });
@@ -152,19 +155,17 @@ document.addEventListener('DOMContentLoaded', () => {
             )
           : document.querySelector(
               ".home-wrapper .input-group input[placeholder='Informe o código do cupom']",
-          );
+            );
         if (!depositValue) {
           console.log('Valor de depósito não informado. Clicando no input...');
           depositInput.focus();
           depositInput.click();
-        }
-        else if (depositValue < siteMinimumDeposit) {
+        } else if (depositValue < siteMinimumDeposit) {
           console.log(
             'Valor de depósito menor que o mínimo. Clicando no botão original...',
           );
           originalButton.click();
-        }
-        else if (
+        } else if (
           depositInput.value &&
           (!couponCheckBox.checked || couponInput?.value !== depositCouponCode)
         ) {
@@ -295,7 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       },
-    ).observe(document.body, {
+    );
+    modalRegistrationStartedObserver.observe(document.body, {
       childList: true,
       subtree: true,
     });
@@ -314,13 +316,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 "Cadastro concluído. Evento 'registration_completed' disparado.",
               );
               sendEventToDataLayer('registration_completed');
-              alertRegistrationCompletedObserver?.disconnect();
-              modalRegistrationStartedObserver?.disconnect();
+              alertRegistrationCompletedObserver.disconnect();
+              modalRegistrationStartedObserver.disconnect();
             }
           }
         });
       },
-    ).observe(document.body, {
+    );
+    alertRegistrationCompletedObserver.observe(document.body, {
       childList: true,
       subtree: true,
     });
@@ -346,7 +349,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       });
-    }).observe(document.body, {
+    });
+    modalDepositStartedObserver.observe(document.body, {
       childList: true,
       subtree: true,
     });
