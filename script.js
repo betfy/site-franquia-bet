@@ -399,6 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // });
   }
 
+  // Interceptação de fetch
   (function () {
     const originalFetch = window.fetch;
 
@@ -409,8 +410,10 @@ document.addEventListener('DOMContentLoaded', () => {
       clonedResponse
         .json()
         .then((data) => {
-          console.log('Intercepted fetch request:', args[0]);
-          console.log('Response:', data);
+          console.log('Intercepted fetch request URL:', args[0]);
+          if (data) {
+            console.log('Response data:', data);
+          }
         })
         .catch((error) => {
           console.error('Error parsing response as JSON:', error);
