@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // Se não houver header e body modal é o Banner PopUp
           if (!modalHeader && !modalBody) {
             console.log('Desconectando bannerPopUpObserver...');
-            modalBannerPopUpObserver.disconnect();
+            modalBannerPopUpObserver?.disconnect();
             addButtonBannerPopUp();
           }
         }
@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
       mutations.forEach((mutation) => {
         if (!isInitialPage()) {
           console.log('Desconectando bannerPopUpObserver...');
-          modalBannerPopUpObserver.disconnect();
-          pageChangeObserver.disconnect();
+          modalBannerPopUpObserver?.disconnect();
+          pageChangeObserver?.disconnect();
         }
       });
     }).observe(document.body, {
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'Formulário de depósito detectado. Clonando botão de depósito...',
           );
           replaceDepositFormButton(depositButton);
-          depositFormObserver.disconnect();
+          depositFormObserver?.disconnect();
         }
       });
     }).observe(document.body, {
@@ -314,8 +314,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 "Cadastro concluído. Evento 'registration_completed' disparado.",
               );
               sendEventToDataLayer('registration_completed');
-              alertRegistrationCompletedObserver.disconnect();
-              modalRegistrationStartedObserver.disconnect();
+              alertRegistrationCompletedObserver?.disconnect();
+              modalRegistrationStartedObserver?.disconnect();
             }
           }
         });
