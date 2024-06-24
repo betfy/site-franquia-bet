@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Script de Eventos GTM iniciado.');
   initRegistrationStartedObserver();
   initDepositStartedObserver();
+  // ? INTERCEPTAÇÃO DE REQUISIÇÕES FETCH E XMLHTTPREQUESTS
+  console.log('Script de interceptação de requisições iniciado.');
+  initRequestsInterceptor();
 
   // =============================================================
 
@@ -400,47 +403,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Interceptação de Requisições Fetch e XMLHttpRequests
-  (function () {
+  function initRequestsInterceptor() {
     const originalFetch = window.fetch;
-
     window.fetch = async function (...args) {
-      try {
-        const response = await originalFetch.apply(this, args);
-        const clonedResponse = response.clone();
+      const response = await originalFetch(...args);
+      const clonedResponse = response.clone();
 
-        clonedResponse
-          .json()
-          .then((data) => {
-            console.log('Intercepted fetch request URL:', args[0]);
-            if (data) {
-              console.log('Response data:', data);
-            }
-          })
-          .catch((error) => {
-            console.log('Non-JSON response or error parsing JSON:', error);
-          });
+      clonedResponse
+        .json()
+        .then((data) => {
+          console.log('Fetch request URL:', args[0]);
+          console.log('Fetch response data:', data);
+        })
+        .catch((error) => {
+          console.error('Error parsing fetch response as JSON:', error);
+        });
 
-        return response;
-      } catch (error) {
-        console.error('Fetch request failed:', error);
-        throw error;
-      }
+      return response;
     };
 
-    // Intercept XMLHttpRequests
+    // Intercept XMLHttpRequest requests
     const originalOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function (method, url) {
+    XMLHttpRequest.prototype.open = function (...args) {
+      this._requestUrl = args[1];
+      return originalOpen.apply(this, args);
+    };
+
+    const originalSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (...args) {
       this.addEventListener('load', function () {
         try {
-          const response = this.responseText;
-          const data = JSON.parse(response);
-          console.log('Intercepted XHR request URL:', url);
-          console.log('Response data:', data);
-        } catch (error) {
-          console.log('Non-JSON response or error parsing JSON:', error);
+          const response = JSON.parse(this.responseText);
+          console.log('XHR request URL:', this._requestUrl);
+          console.log('XHR response data:', response);
+        } catch (e) {
+          console.error('Error parsing XHR response as JSON:', e);
         }
       });
-      originalOpen.apply(this, arguments);
+      return originalSend.apply(this, args);
     };
-  })();
+  }
+  //
 });
