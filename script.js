@@ -398,4 +398,25 @@ document.addEventListener('DOMContentLoaded', () => {
     //   subtree: true,
     // });
   }
+
+  (function () {
+    const originalFetch = window.fetch;
+
+    window.fetch = async function (...args) {
+      const response = await originalFetch(...args);
+      const clonedResponse = response.clone();
+
+      clonedResponse
+        .json()
+        .then((data) => {
+          console.log('Intercepted fetch request:', args[0]);
+          console.log('Response:', data);
+        })
+        .catch((error) => {
+          console.error('Error parsing response as JSON:', error);
+        });
+
+      return response;
+    };
+  })();
 });
