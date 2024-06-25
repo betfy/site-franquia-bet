@@ -14,14 +14,11 @@ console.log('Monitoramento de Eventos GTM iniciado.');
 initRegistrationStartedObserver();
 initDepositStartedObserver();
 
-// ? UTILIZAÇÃO DE CUPOM DE DEPÓSITO (EXECUÇÃO APÓS O CARREGAMENTO DO DOM)
-document.addEventListener('DOMContentLoaded', () => {
-  if (isInitialPage()) {
-    console.log('Script de cupom de depósito iniciado.');
-    initModalBannerPopUpObserver();
-  }
-});
-
+// ? UTILIZAÇÃO DE CUPOM DE DEPÓSITO
+if (isInitialPage()) {
+  console.log('Script de cupom de depósito iniciado.');
+  initModalBannerPopUpObserver();
+}
 // =============================================================
 
 // ! FUNÇÕES
