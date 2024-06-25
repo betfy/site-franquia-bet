@@ -1,4 +1,5 @@
-// Autor: Weliton Almeida
+// Script de automatização de processos para sites da Franquia Bet.
+// Autor: Weliton Almeida - 63 99108-0146
 
 // ? VARIÁVEIS GLOBAIS
 const depositCouponCode = 'GANHA25';
