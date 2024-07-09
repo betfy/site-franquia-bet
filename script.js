@@ -1,57 +1,151 @@
 // Script de automatização de processos para sites da Franquia Bet.
 // Autor: Weliton Almeida - 63 99108-0146
 
-// ? INTERCEPTAÇÃO DE REQUISIÇÕES FETCH E XMLHTTPREQUESTS
+// ! INTERCEPTAÇÃO DE REQUISIÇÕES XMLHTTPREQUESTS
 console.log('Interceptação de requisições iniciada.');
 initRequestsInterceptor();
 
-// Interceptação de Requisições Fetch e XMLHttpRequests
+// Interceptação de Requisições XMLHttpRequests
 function initRequestsInterceptor() {
-  const originalFetch = window.fetch;
-  window.fetch = async function (...args) {
-    const response = await originalFetch(...args);
-    const clonedResponse = response.clone();
-
-    clonedResponse
-      .json()
-      .then((data) => {
-        console.log('Fetch request URL:', args[0]);
-        console.log('Fetch response data:', data);
-      })
-      .catch((error) => {
-        console.error('Error parsing fetch response as JSON:', error);
-      });
-
-    return response;
-  };
-
-  // Intercept XMLHttpRequest requests
   const originalOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (...args) {
     this._requestUrl = args[1];
+    // Salva a URL base da API na primeira requisição interceptada
+    if (!localStorage.getItem('url_api') && this._requestUrl.includes('/api')) {
+      const url = new URL(this._requestUrl);
+      const apiPathIndex = url.pathname.indexOf('/api');
+      if (apiPathIndex !== -1) {
+        const baseUrl = `${url.origin}${url.pathname.substring(
+          0,
+          apiPathIndex + 4,
+        )}`;
+        localStorage.setItem('url_api', baseUrl);
+        console.log(`URL base da API salva: ${baseUrl}`);
+      }
+    }
+
     return originalOpen.apply(this, args);
   };
 
   const originalSend = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.send = function (...args) {
     this.addEventListener('load', function () {
-      try {
-        const response = JSON.parse(this.responseText);
-        console.log('XHR request URL:', this._requestUrl);
-        console.log('XHR response data:', response);
-      } catch (e) {
-        console.error('Error parsing XHR response as JSON:', e);
-      }
+      handleXHRRequest(this._requestUrl, this.responseText);
     });
     return originalSend.apply(this, args);
   };
+}
+
+function handleXHRRequest(url, responseText) {
+  if (url.includes('/estados')) {
+    console.log('Requisição GET /estados interceptada.');
+    sendEventToDataLayer('registration_started');
+  } else if (url.includes('/cadastro')) {
+    const data = JSON.parse(responseText);
+    console.log('Requisição POST /cadastro interceptada.');
+    if (data.resposta === true) {
+      sendEventToDataLayer('registration_completed');
+    }
+  } else if (url.includes('/usuario')) {
+    const data = JSON.parse(responseText);
+    console.log('Requisição GET /usuario interceptada.');
+    handleUserLogin(data);
+  } else if (url.includes('/deposito')) {
+    const data = JSON.parse(responseText);
+    console.log('Requisição POST /deposito interceptada.');
+    if (data.resposta === true) {
+      handleDepositStarted(data.deposito);
+    }
+  } else if (url.includes('/verificarPix')) {
+    const data = JSON.parse(responseText);
+    console.log('Requisição POST /verificarPix interceptada.');
+    if (data.pago === true) {
+      sendEventToDataLayer('deposit_completed');
+    }
+  }
+}
+
+// Funções auxiliares
+function handleUserLogin(data) {
+  const previousUser = JSON.parse(localStorage.getItem('user')) || {};
+  if (previousUser.saldo !== data.saldo) {
+    handleDepositVerification(previousUser, data);
+  }
+  const user = {
+    nome: data.nome,
+    login: data.login,
+    cpf: data.cpf,
+    email: data.email,
+    telefone: data.telefone,
+    saldo: data.saldo,
+    saldo_bonus: data.saldo_bonus,
+  };
+  localStorage.setItem('user', JSON.stringify(user));
+}
+
+function handleDepositVerification(previousUser, currentUser) {
+  const lastDeposit = JSON.parse(localStorage.getItem('last_deposit'));
+  const apiUrl = localStorage.getItem('url_api');
+  if (lastDeposit && !lastDeposit.data_pagamento && apiUrl) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${apiUrl}/deposito?deposito=${lastDeposit.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.resposta === true && data.deposito.data_pagamento) {
+            sendEventToDataLayer('deposit_completed');
+          }
+        })
+        .catch((error) =>
+          console.error('Error fetching deposit status:', error),
+        );
+    }
+  }
+}
+
+function handleDepositStarted(deposito) {
+  const depositData = {
+    id: deposito.id,
+    data: deposito.data,
+    data_pagamento: deposito.data_pagamento,
+    pix: deposito.pix,
+    status: deposito.status,
+    valor: deposito.valor,
+    bonus: deposito.bonus,
+    usuario: deposito.usuario,
+  };
+  localStorage.setItem('last_deposit', JSON.stringify(depositData));
+  sendEventToDataLayer('deposit_started');
+}
+
+function sendEventToDataLayer(eventName) {
+  if (!window.dataLayer) {
+    window.dataLayer = [];
+  }
+  const existingEvent = window.dataLayer.find(
+    (event) => event.event === eventName,
+  );
+  if (!existingEvent) {
+    window.dataLayer.push({
+      event: eventName,
+    });
+    console.log(`Evento '${eventName}' adicionado ao DataLayer.`);
+  } else {
+    console.log(`Evento '${eventName}' já existe no DataLayer.`);
+  }
 }
 
 // ! EXECUÇÃO APÓS O CARREGAMENTO DO DOM
 document.addEventListener('DOMContentLoaded', () => {
   const depositCouponCode = 'GANHA25';
   const siteMinimumDeposit = 2;
-  
+
   // ? UTILIZAÇÃO DE CUPOM DE DEPÓSITO
   if (isInitialPage()) {
     console.log('Script de cupom de depósito iniciado.');
@@ -59,8 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   // ? EVENTOS PERSONALIZADOS DO GTM (Google Tag Manager)
   console.log('Monitoramento de Eventos GTM iniciado.');
-  initRegistrationStartedObserver();
-  initDepositStartedObserver();
 
   function isMobile() {
     return window.innerWidth <= 768;
@@ -83,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log('Modal detectado. Analisando conteúdo...');
           const modalHeader = modal.querySelector('.modal-header');
           const modalBody = modal.querySelector('.modal-body');
-          // Se não houver header e body modal é o Banner PopUp
           if (!modalHeader && !modalBody) {
             console.log('Desconectando bannerPopUpObserver...');
             modalBannerPopUpObserver.disconnect();
